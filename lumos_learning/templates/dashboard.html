@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1>Welcome back, {{ user.first_name|default:user.username }}!</h1>
+            <p class="text-muted">{{ user.get_role_display }} Dashboard</p>
+        </div>
+    </div>
+
+    {% if user.role == 'student' %}
+    <!-- Student Dashboard -->
+    <div class="row g-4">
+        <!-- Stats Cards -->
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ enrolled_courses.count }}</h4>
+                            <p class="mb-0">Enrolled Courses</p>
+                        </div>
+                        <i class="fas fa-book fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ recent_payments.count }}</h4>
+                            <p class="mb-0">Total Payments</p>
+                        </div>
+                        <i class="fas fa-credit-card fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>0</h4>
+                            <p class="mb-0">Certificates</p>
+                        </div>
+                        <i class="fas fa-certificate fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enrolled Courses -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">My Courses</h5>
+                </div>
+                <div class="card-body">
+                    {% if enrolled_courses %}
+                        <div class="row g-3">
+                            {% for enrollment in enrolled_courses %}
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ enrollment.course.title }}</h6>
+                                        <p class="card-text text-muted">{{ enrollment.course.description|truncatewords:15 }}</p>
+                                        <div class="progress mb-2">
+                                            <div class="progress-bar" role="progressbar" style="width: {{ enrollment.progress_percentage }}%">
+                                                {{ enrollment.progress_percentage }}%
+                                            </div>
+                                        </div>
+                                        <a href="{{ enrollment.course.get_absolute_url }}" class="btn btn-primary btn-sm">Continue Learning</a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">You haven't enrolled in any courses yet.</p>
+                        <a href="{% url 'course_list' %}" class="btn btn-primary">Browse Courses</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Payments -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Payments</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_payments %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payment in recent_payments %}
+                                    <tr>
+                                        <td>{{ payment.item_name }}</td>
+                                        <td>${{ payment.amount }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if payment.status == 'completed' %}success{% elif payment.status == 'pending' %}warning{% else %}danger{% endif %}">
+                                                {{ payment.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ payment.created_at|date:"M d, Y" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <a href="{% url 'payment_history' %}" class="btn btn-outline-primary">View All Payments</a>
+                    {% else %}
+                        <p class="text-muted">No payments yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% elif user.role == 'teacher' %}
+    <!-- Teacher Dashboard -->
+    <div class="row g-4">
+        <!-- Stats Cards -->
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ my_courses.count }}</h4>
+                            <p class="mb-0">My Courses</p>
+                        </div>
+                        <i class="fas fa-chalkboard-teacher fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ total_students }}</h4>
+                            <p class="mb-0">Total Students</p>
+                        </div>
+                        <i class="fas fa-users fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>${{ total_revenue|floatformat:2 }}</h4>
+                            <p class="mb-0">Total Revenue</p>
+                        </div>
+                        <i class="fas fa-dollar-sign fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Courses -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">My Courses</h5>
+                    <a href="#" class="btn btn-primary btn-sm">Create New Course</a>
+                </div>
+                <div class="card-body">
+                    {% if my_courses %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Course</th>
+                                        <th>Students</th>
+                                        <th>Status</th>
+                                        <th>Price</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for course in my_courses %}
+                                    <tr>
+                                        <td>{{ course.title }}</td>
+                                        <td>{{ course.total_enrollments }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if course.is_published %}success{% else %}warning{% endif %}">
+                                                {% if course.is_published %}Published{% else %}Draft{% endif %}
+                                            </span>
+                                        </td>
+                                        <td>${{ course.price }}</td>
+                                        <td>
+                                            <a href="{{ course.get_absolute_url }}" class="btn btn-sm btn-outline-primary">View</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">You haven't created any courses yet.</p>
+                        <a href="#" class="btn btn-primary">Create Your First Course</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
