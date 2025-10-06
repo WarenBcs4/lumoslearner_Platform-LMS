@@ -3,7 +3,7 @@ services:
     name: lumos-learning
     env: python
     plan: free
-    buildCommand: "cd lumos_learning && pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate"
+    buildCommand: "cd lumos_learning && pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate && python manage.py setup_admin"
     startCommand: "cd lumos_learning && gunicorn lumos.wsgi:application"
     envVars:
       - key: DATABASE_URL
@@ -23,4 +23,3 @@ databases:
   - name: lumos-db
     databaseName: lumos_learning
     user: lumos_user
-    plan: free
