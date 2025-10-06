@@ -2,17 +2,13 @@ services:
   - type: web
     name: lumos-learning
     env: python
-    buildCommand: "./build.sh"
-    startCommand: "gunicorn lumos.wsgi:application"
+    plan: free
+    buildCommand: "cd lumos_learning && pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate"
+    startCommand: "cd lumos_learning && gunicorn lumos.wsgi:application"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: lumos-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: lumos-redis
           property: connectionString
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -23,11 +19,8 @@ services:
       - key: ALLOWED_HOSTS
         value: .onrender.com
 
-  - type: redis
-    name: lumos-redis
-    ipAllowList: []
-
 databases:
   - name: lumos-db
     databaseName: lumos_learning
     user: lumos_user
+    plan: free
