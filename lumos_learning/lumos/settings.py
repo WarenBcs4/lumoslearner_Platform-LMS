@@ -31,8 +31,6 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'corsheaders',
-    'csp',
-    'django_ratelimit',
     
     # Local apps
     'core',
@@ -51,7 +49,6 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'csp.middleware.CSPMiddleware',
 ]
 
 ROOT_URLCONF = 'lumos.urls'
